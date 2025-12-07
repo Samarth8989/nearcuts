@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NearCuts - Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            margin-bottom: 24px;
+            color: #1a1a2e;
+        }
+        .stats {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            flex: 1;
+        }
+        .stat-card h3 {
+            color: #6b7280;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        .stat-card .number {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #e94560;
+        }
+        .bookings-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .booking-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .booking-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .booking-header h3 {
+            font-family: 'Outfit', sans-serif;
+            color: #1a1a2e;
+        }
+        .booking-time {
+            font-size: 0.85rem;
+            color: #6b7280;
+        }
+        .booking-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+        }
+        .detail-label {
+            font-size: 0.8rem;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+        .detail-value {
+            font-weight: 500;
+            color: #1f2937;
+        }
+        .whatsapp-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #25D366;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .whatsapp-link:hover {
+            text-decoration: underline;
+        }
+        .actions {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            gap: 12px;
+        }
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+        .btn-whatsapp {
+            background: #25D366;
+            color: white;
+        }
+        .btn-whatsapp:hover {
+            background: #128C7E;
+        }
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+        }
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 12px;
+            color: #6b7280;
+        }
+        .refresh-btn {
+            background: #e94560;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 24px;
+        }
+        .refresh-btn:hover {
+            background: #d63850;
+        }
+        @media (max-width: 600px) {
+            .stats { flex-direction: column; }
+            .booking-details { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📋 Booking Requests</h1>
+        
+        <button class="refresh-btn" onclick="loadBookings()">🔄 Refresh</button>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <h3>Total Bookings</h3>
+                <div class="number" id="total-count">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Today</h3>
+                <div class="number" id="today-count">0</div>
+            </div>
+        </div>
+        
+        <div id="bookings-container" class="bookings-list">
+            <!-- Bookings will be loaded here -->
+        </div>
+    </div>
+
+    <script>
+        function loadBookings() {
+            const bookings = JSON.parse(localStorage.getItem('nearcuts_bookings') || '[]');
+            const container = document.getElementById('bookings-container');
+            
+            // Update stats
+            document.getElementById('total-count').textContent = bookings.length;
+            
+            const today = new Date().toDateString();
+            const todayCount = bookings.filter(b => 
+                new Date(b.timestamp).toDateString() === today
+            ).length;
+            document.getElementById('today-count').textContent = todayCount;
+            
+            if (bookings.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No bookings yet</h3>
+                        <p>Booking requests will appear here</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Sort by newest first
+            bookings.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            container.innerHTML = bookings.map((booking, index) => {
+                const time = new Date(booking.timestamp).toLocaleString();
+                
+                // Create WhatsApp message for salon owner
+                const salonMessage = encodeURIComponent(
+                    `Hi ${booking.salonOwnerName},\n\n` +
+                    `New booking request from NearCuts:\n\n` +
+                    `👤 Customer: ${booking.customerName}\n` +
+                    `📱 Phone: ${booking.customerPhone}\n` +
+                    `✂️ Service: ${booking.serviceName} (₹${booking.servicePrice})\n` +
+                    `📅 Date: ${booking.date}\n` +
+                    `🕐 Preferred Slots: ${booking.preferredSlots}\n\n` +
+                    `Please confirm one of the time slots.`
+                );
+                
+                // Create WhatsApp message for customer (after confirmation)
+                const customerMessage = encodeURIComponent(
+                    `Hi ${booking.customerName},\n\n` +
+                    `Your booking at ${booking.salonName} has been confirmed! ✅\n\n` +
+                    `📍 ${booking.salonAddress}\n` +
+                    `✂️ Service: ${booking.serviceName}\n` +
+                    `📅 Date: ${booking.date}\n` +
+                    `🕐 Time: [CONFIRMED_SLOT]\n` +
+                    `💰 Price: ₹${booking.servicePrice}\n\n` +
+                    `See you there!`
+                );
+                
+                return `
+                    <div class="booking-card">
+                        <div class="booking-header">
+                            <div>
+                                <h3>${booking.customerName}</h3>
+                                <div class="booking-time">${time}</div>
+                            </div>
+                        </div>
+                        <div class="booking-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Customer Phone</span>
+                                <a href="https://wa.me/91${booking.customerPhone}" target="_blank" class="whatsapp-link">
+                                    📱 ${booking.customerPhone}
+                                </a>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Salon</span>
+                                <span class="detail-value">${booking.salonName}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Salon Owner</span>
+                                <a href="https://wa.me/91${booking.salonOwnerPhone}" target="_blank" class="whatsapp-link">
+                                    📱 ${booking.salonOwnerName} (${booking.salonOwnerPhone})
+                                </a>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Service</span>
+                                <span class="detail-value">${booking.serviceName} - ₹${booking.servicePrice}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Date</span>
+                                <span class="detail-value">${booking.date}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Preferred Slots</span>
+                                <span class="detail-value">${booking.preferredSlots}</span>
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <a href="https://wa.me/91${booking.salonOwnerPhone}?text=${salonMessage}" 
+                               target="_blank" 
+                               class="btn btn-whatsapp">
+                                📤 Send to Salon
+                            </a>
+                            <a href="https://wa.me/91${booking.customerPhone}?text=${customerMessage}" 
+                               target="_blank" 
+                               class="btn btn-secondary">
+                                ✅ Confirm to Customer
+                            </a>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Load on page load
+        loadBookings();
+    </script>
+</body>
+</html>

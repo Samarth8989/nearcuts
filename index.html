@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NearCuts - Book Salons Near You</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container header-content">
+            <a href="#" class="logo" onclick="goToHome()">
+                <span class="logo-icon">✂</span>
+                <span class="logo-text">NearCuts</span>
+            </a>
+            <nav class="nav">
+                <a href="#how-it-works">How it works</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <!-- Screen 1: Location Selection -->
+        <section id="screen-location" class="screen active">
+            <div class="container">
+                <div class="hero">
+                    <h1 class="hero-title">Book your next <span class="highlight">haircut</span> in seconds</h1>
+                    <p class="hero-subtitle">Find and book appointments at salons near you. No calls, no waiting.</p>
+                    
+                    <div class="location-card">
+                        <h3>Where are you?</h3>
+                        
+                        <button class="btn btn-primary btn-location" onclick="useMyLocation()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <circle cx="12" cy="12" r="3"/>
+                                <line x1="12" y1="2" x2="12" y2="6"/>
+                                <line x1="12" y1="18" x2="12" y2="22"/>
+                                <line x1="2" y1="12" x2="6" y2="12"/>
+                                <line x1="18" y1="12" x2="22" y2="12"/>
+                            </svg>
+                            Use my location
+                        </button>
+                        
+                        <div class="divider">
+                            <span>or select your area</span>
+                        </div>
+                        
+                        <div class="select-wrapper">
+                            <select id="area-select" onchange="onAreaSelect()">
+                                <option value="">Choose your area...</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="how-it-works" class="how-it-works">
+                    <h2>How it works</h2>
+                    <div class="steps">
+                        <div class="step">
+                            <div class="step-number">1</div>
+                            <h4>Select Location</h4>
+                            <p>Share your location or pick your area</p>
+                        </div>
+                        <div class="step">
+                            <div class="step-number">2</div>
+                            <h4>Choose Salon</h4>
+                            <p>Browse nearby salons and their services</p>
+                        </div>
+                        <div class="step">
+                            <div class="step-number">3</div>
+                            <h4>Book Slot</h4>
+                            <p>Pick your preferred time slots</p>
+                        </div>
+                        <div class="step">
+                            <div class="step-number">4</div>
+                            <h4>Get Confirmed</h4>
+                            <p>Salon confirms via WhatsApp</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Screen 2: Salon Listing -->
+        <section id="screen-salons" class="screen">
+            <div class="container">
+                <button class="btn-back" onclick="goToHome()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    Change location
+                </button>
+                
+                <div class="salons-header">
+                    <h2>Salons near <span id="selected-area-name">you</span></h2>
+                    <p id="salon-count">0 salons found</p>
+                </div>
+                
+                <div id="salons-list" class="salons-list">
+                    <!-- Salons will be populated here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Screen 3: Salon Detail -->
+        <section id="screen-salon-detail" class="screen">
+            <div class="container">
+                <button class="btn-back" onclick="goToSalons()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    Back to salons
+                </button>
+                
+                <div id="salon-detail" class="salon-detail">
+                    <!-- Salon details will be populated here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Screen 4: Booking -->
+        <section id="screen-booking" class="screen">
+            <div class="container">
+                <button class="btn-back" onclick="goToSalonDetail()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    Back
+                </button>
+                
+                <div class="booking-container">
+                    <h2>Book Appointment</h2>
+                    <div id="booking-summary" class="booking-summary">
+                        <!-- Booking summary will be populated here -->
+                    </div>
+                    
+                    <div class="booking-form">
+                        <div class="form-section">
+                            <h3>Select Date</h3>
+                            <div id="date-picker" class="date-picker">
+                                <!-- Dates will be populated here -->
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <h3>Select Time Slots <span class="hint">(Choose up to 3 preferred slots)</span></h3>
+                            <div id="time-slots" class="time-slots">
+                                <!-- Time slots will be populated here -->
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <h3>Your Details</h3>
+                            <div class="form-group">
+                                <label for="customer-name">Name</label>
+                                <input type="text" id="customer-name" placeholder="Enter your name">
+                            </div>
+                            <div class="form-group">
+                                <label for="customer-phone">WhatsApp Number</label>
+                                <input type="tel" id="customer-phone" placeholder="Enter 10-digit number">
+                            </div>
+                        </div>
+                        
+                        <button class="btn btn-primary btn-book" onclick="submitBooking()">
+                            Confirm Booking Request
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Screen 5: Confirmation -->
+        <section id="screen-confirmation" class="screen">
+            <div class="container">
+                <div class="confirmation-card">
+                    <div class="confirmation-icon">✓</div>
+                    <h2>Booking Request Sent!</h2>
+                    <p>We've notified the salon about your booking request. You'll receive a WhatsApp message once they confirm.</p>
+                    
+                    <div id="confirmation-details" class="confirmation-details">
+                        <!-- Confirmation details will be populated here -->
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="goToHome()">
+                        Book Another
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>© 2024 NearCuts. Made with ♥ in Bangalore.</p>
+        </div>
+    </footer>
+
+    <!-- Loading Overlay -->
+    <div id="loading" class="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
