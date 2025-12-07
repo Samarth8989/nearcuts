@@ -524,6 +524,27 @@ select:focus {
     margin-top: 24px;
 }
 
+/* Selected Services Summary */
+.selected-services-summary {
+    background: #fff0f3;
+    border: 2px solid var(--color-accent);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-top: 20px;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.summary-total {
+    font-family: var(--font-display);
+    font-weight: 600;
+    color: var(--color-accent);
+}
+
 /* Booking Form */
 .booking-container {
     background: var(--color-white);
