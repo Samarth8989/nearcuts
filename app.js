@@ -4,7 +4,7 @@ let state = {
     selectedArea: null,
     salons: [],
     selectedSalon: null,
-    selectedService: null,
+    selectedServices: [], // Changed to array for multiple services
     selectedDate: null,
     selectedSlots: [],
     customerName: '',
@@ -165,7 +165,7 @@ function renderSalonsList() {
 // Select a salon
 function selectSalon(salonId) {
     state.selectedSalon = state.salons.find(s => s.id === salonId);
-    state.selectedService = null;
+    state.selectedServices = []; // Reset to empty array
     renderSalonDetail();
     showScreen('screen-salon-detail');
 }
@@ -174,6 +174,15 @@ function selectSalon(salonId) {
 function renderSalonDetail() {
     const container = document.getElementById('salon-detail');
     const salon = state.selectedSalon;
+    
+    // Calculate total price and duration
+    let totalPrice = 0;
+    let totalDuration = 0;
+    state.selectedServices.forEach(index => {
+        totalPrice += salon.services[index].price;
+        const duration = parseInt(salon.services[index].duration);
+        if (!isNaN(duration)) totalDuration += duration;
+    });
 
     container.innerHTML = `
         <div class="salon-detail-header">
@@ -188,11 +197,11 @@ function renderSalonDetail() {
             </div>
         </div>
         <div class="salon-detail-body">
-            <h3>Select a Service</h3>
+            <h3>Select Services <span class="hint">(Select one or more)</span></h3>
             <div class="services-list">
                 ${salon.services.map((service, index) => `
-                    <div class="service-item ${state.selectedService === index ? 'selected' : ''}" 
-                         onclick="selectService(${index})">
+                    <div class="service-item ${state.selectedServices.includes(index) ? 'selected' : ''}" 
+                         onclick="toggleService(${index})">
                         <div class="service-item-info">
                             <h4>${service.name}</h4>
                             <p>${service.duration}</p>
@@ -201,25 +210,42 @@ function renderSalonDetail() {
                     </div>
                 `).join('')}
             </div>
+            ${state.selectedServices.length > 0 ? `
+                <div class="selected-services-summary">
+                    <div class="summary-row">
+                        <span>${state.selectedServices.length} service${state.selectedServices.length > 1 ? 's' : ''} selected</span>
+                        <span class="summary-total">₹${totalPrice}${totalDuration > 0 ? ` • ~${totalDuration} min` : ''}</span>
+                    </div>
+                </div>
+            ` : ''}
             <button class="btn btn-primary btn-book-service" 
                     onclick="proceedToBooking()"
-                    ${state.selectedService === null ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
-                Book This Service
+                    ${state.selectedServices.length === 0 ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
+                Book ${state.selectedServices.length > 0 ? `(${state.selectedServices.length}) Service${state.selectedServices.length > 1 ? 's' : ''}` : 'Services'}
             </button>
         </div>
     `;
 }
 
-// Select a service
-function selectService(index) {
-    state.selectedService = index;
+// Toggle service selection (multi-select)
+function toggleService(index) {
+    const serviceIndex = state.selectedServices.indexOf(index);
+    
+    if (serviceIndex > -1) {
+        // Remove if already selected
+        state.selectedServices.splice(serviceIndex, 1);
+    } else {
+        // Add if not selected
+        state.selectedServices.push(index);
+    }
+    
     renderSalonDetail();
 }
 
 // Proceed to booking
 function proceedToBooking() {
-    if (state.selectedService === null) {
-        showToast('Please select a service first', 'error');
+    if (state.selectedServices.length === 0) {
+        showToast('Please select at least one service', 'error');
         return;
     }
 
@@ -232,7 +258,19 @@ function proceedToBooking() {
 // Render booking form
 function renderBookingForm() {
     const salon = state.selectedSalon;
-    const service = salon.services[state.selectedService];
+    
+    // Calculate totals for selected services
+    let totalPrice = 0;
+    let totalDuration = 0;
+    const serviceNames = [];
+    
+    state.selectedServices.forEach(index => {
+        const service = salon.services[index];
+        totalPrice += service.price;
+        const duration = parseInt(service.duration);
+        if (!isNaN(duration)) totalDuration += duration;
+        serviceNames.push(service.name);
+    });
 
     // Booking summary
     const summaryContainer = document.getElementById('booking-summary');
@@ -242,16 +280,16 @@ function renderBookingForm() {
             <span class="booking-summary-value">${salon.name}</span>
         </div>
         <div class="booking-summary-item">
-            <span class="booking-summary-label">Service</span>
-            <span class="booking-summary-value">${service.name}</span>
+            <span class="booking-summary-label">Services</span>
+            <span class="booking-summary-value">${serviceNames.join(', ')}</span>
         </div>
         <div class="booking-summary-item">
-            <span class="booking-summary-label">Duration</span>
-            <span class="booking-summary-value">${service.duration}</span>
+            <span class="booking-summary-label">Total Duration</span>
+            <span class="booking-summary-value">~${totalDuration} min</span>
         </div>
         <div class="booking-summary-item">
-            <span class="booking-summary-label">Price</span>
-            <span class="booking-summary-value">₹${service.price}</span>
+            <span class="booking-summary-label">Total Price</span>
+            <span class="booking-summary-value">₹${totalPrice}</span>
         </div>
     `;
 
@@ -384,9 +422,22 @@ async function submitBooking() {
 
     showLoading(true);
 
-    // Prepare booking data
+    // Prepare booking data with multiple services
     const salon = state.selectedSalon;
-    const service = salon.services[state.selectedService];
+    
+    // Calculate totals
+    let totalPrice = 0;
+    let totalDuration = 0;
+    const serviceNames = [];
+    
+    state.selectedServices.forEach(index => {
+        const service = salon.services[index];
+        totalPrice += service.price;
+        const duration = parseInt(service.duration);
+        if (!isNaN(duration)) totalDuration += duration;
+        serviceNames.push(`${service.name} (₹${service.price})`);
+    });
+    
     const dateInfo = getNextDays(7)[state.selectedDate];
     const slots = state.selectedSlots.map(i => TIME_SLOTS[i]).join(', ');
 
@@ -398,9 +449,9 @@ async function submitBooking() {
         salonAddress: salon.address,
         salonOwnerName: salon.ownerName,
         salonOwnerPhone: salon.ownerPhone,
-        serviceName: service.name,
-        servicePrice: service.price,
-        serviceDuration: service.duration,
+        services: serviceNames.join(', '),
+        totalPrice: totalPrice,
+        totalDuration: `${totalDuration} min`,
         date: `${dateInfo.day}, ${dateInfo.date} ${dateInfo.month}`,
         preferredSlots: slots
     };
@@ -479,8 +530,12 @@ function showConfirmation(bookingData) {
             <span class="confirmation-details-value">${bookingData.salonName}</span>
         </div>
         <div class="confirmation-details-item">
-            <span class="confirmation-details-label">Service</span>
-            <span class="confirmation-details-value">${bookingData.serviceName} (₹${bookingData.servicePrice})</span>
+            <span class="confirmation-details-label">Services</span>
+            <span class="confirmation-details-value">${bookingData.services}</span>
+        </div>
+        <div class="confirmation-details-item">
+            <span class="confirmation-details-label">Total</span>
+            <span class="confirmation-details-value">₹${bookingData.totalPrice} • ${bookingData.totalDuration}</span>
         </div>
         <div class="confirmation-details-item">
             <span class="confirmation-details-label">Date</span>
@@ -515,7 +570,7 @@ function goToHome() {
         selectedArea: null,
         salons: [],
         selectedSalon: null,
-        selectedService: null,
+        selectedServices: [], // Reset to empty array
         selectedDate: null,
         selectedSlots: [],
         customerName: '',
