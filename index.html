@@ -29,8 +29,11 @@
         <section id="screen-location" class="screen active">
             <div class="container">
                 <div class="hero">
+                    <div class="hero-badge">
+                        <span>✨</span> Book in 30 seconds
+                    </div>
                     <h1 class="hero-title">Book your next <span class="highlight">haircut</span> in seconds</h1>
-                    <p class="hero-subtitle">Find and book appointments at salons near you. No calls, no waiting.</p>
+                    <p class="hero-subtitle">Find and book appointments at local salons near you. No calls, no waiting.</p>
                     
                     <div class="location-card">
                         <h3>Where are you?</h3>
@@ -61,6 +64,7 @@
 
                 <div id="how-it-works" class="how-it-works">
                     <h2>How it works</h2>
+                    <p class="how-it-works-subtitle">Get your appointment confirmed in 4 simple steps</p>
                     <div class="steps">
                         <div class="step">
                             <div class="step-number">1</div>
@@ -187,9 +191,14 @@
                         <!-- Confirmation details will be populated here -->
                     </div>
                     
-                    <button class="btn btn-primary" onclick="goToHome()">
-                        Book Another
-                    </button>
+                    <div class="confirmation-actions">
+                        <button class="btn btn-primary" onclick="goToHome()">
+                            Book Another
+                        </button>
+                        <button class="btn btn-cancel" onclick="cancelBooking()">
+                            Cancel Booking
+                        </button>
+                    </div>
                 </div>
             </div>
         </section>
