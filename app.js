@@ -140,23 +140,34 @@ function renderSalonsList() {
     areaName.textContent = state.selectedArea ? state.selectedArea.name : 'you';
     salonCount.textContent = `${state.salons.length} salons found`;
 
-    container.innerHTML = state.salons.map(salon => `
+    // Salon icons array for variety
+    const salonIcons = ['💇', '💈', '✂️', '💇‍♂️', '💆'];
+
+    container.innerHTML = state.salons.map((salon, index) => `
         <div class="salon-card" onclick="selectSalon(${salon.id})">
-            <div class="salon-card-header">
-                <h3 class="salon-card-name">${salon.name}</h3>
-                <span class="salon-card-distance">${formatDistance(salon.distance)}</span>
+            <div class="salon-card-icon">
+                ${salonIcons[index % salonIcons.length]}
             </div>
-            <p class="salon-card-address">${salon.address}</p>
-            <div class="salon-card-services">
-                ${salon.services.slice(0, 4).map(s => `
-                    <span class="service-tag">${s.name} - ₹${s.price}</span>
-                `).join('')}
-                ${salon.services.length > 4 ? `<span class="service-tag">+${salon.services.length - 4} more</span>` : ''}
-            </div>
-            <div class="salon-card-rating">
-                <span class="star">★</span>
-                <span>${salon.rating}</span>
-                <span style="color: var(--color-gray-400);">(${salon.reviewCount} reviews)</span>
+            <div class="salon-card-content">
+                <div class="salon-card-header">
+                    <h3 class="salon-card-name">${salon.name}</h3>
+                    <span class="salon-card-distance">${formatDistance(salon.distance)}</span>
+                </div>
+                <p class="salon-card-address">📍 ${salon.address}</p>
+                <div class="salon-card-services">
+                    ${salon.services.slice(0, 3).map(s => `
+                        <span class="service-tag">${s.name} • ₹${s.price}</span>
+                    `).join('')}
+                    ${salon.services.length > 3 ? `<span class="service-tag">+${salon.services.length - 3} more</span>` : ''}
+                </div>
+                <div class="salon-card-footer">
+                    <div class="salon-card-rating">
+                        <span class="star">★</span>
+                        <span>${salon.rating}</span>
+                        <span style="color: var(--color-gray-400); font-weight: 400;">(${salon.reviewCount})</span>
+                    </div>
+                    <span class="salon-card-cta">Book Now →</span>
+                </div>
             </div>
         </div>
     `).join('');
@@ -175,13 +186,10 @@ function renderSalonDetail() {
     const container = document.getElementById('salon-detail');
     const salon = state.selectedSalon;
     
-    // Calculate total price and duration
+    // Calculate total price
     let totalPrice = 0;
-    let totalDuration = 0;
     state.selectedServices.forEach(index => {
         totalPrice += salon.services[index].price;
-        const duration = parseInt(salon.services[index].duration);
-        if (!isNaN(duration)) totalDuration += duration;
     });
 
     container.innerHTML = `
@@ -214,7 +222,7 @@ function renderSalonDetail() {
                 <div class="selected-services-summary">
                     <div class="summary-row">
                         <span>${state.selectedServices.length} service${state.selectedServices.length > 1 ? 's' : ''} selected</span>
-                        <span class="summary-total">₹${totalPrice}${totalDuration > 0 ? ` • ~${totalDuration} min` : ''}</span>
+                        <span class="summary-total">₹${totalPrice}</span>
                     </div>
                 </div>
             ` : ''}
@@ -261,14 +269,11 @@ function renderBookingForm() {
     
     // Calculate totals for selected services
     let totalPrice = 0;
-    let totalDuration = 0;
     const serviceNames = [];
     
     state.selectedServices.forEach(index => {
         const service = salon.services[index];
         totalPrice += service.price;
-        const duration = parseInt(service.duration);
-        if (!isNaN(duration)) totalDuration += duration;
         serviceNames.push(service.name);
     });
 
@@ -282,10 +287,6 @@ function renderBookingForm() {
         <div class="booking-summary-item">
             <span class="booking-summary-label">Services</span>
             <span class="booking-summary-value">${serviceNames.join(', ')}</span>
-        </div>
-        <div class="booking-summary-item">
-            <span class="booking-summary-label">Total Duration</span>
-            <span class="booking-summary-value">~${totalDuration} min</span>
         </div>
         <div class="booking-summary-item">
             <span class="booking-summary-label">Total Price</span>
@@ -343,9 +344,9 @@ function renderTimeSlots() {
     const selectedDateObj = state.selectedDate !== null ? getNextDays(7)[state.selectedDate].fullDate : null;
     const isToday = selectedDateObj && selectedDateObj.toDateString() === now.toDateString();
 
-    container.innerHTML = TIME_SLOTS.map((slot, index) => {
-        // Disable past time slots for today
-        let disabled = false;
+    // Filter out past slots for today
+    const availableSlots = TIME_SLOTS.map((slot, index) => {
+        let isPast = false;
         if (isToday) {
             const [time, period] = slot.split(' ');
             const [hours, minutes] = time.split(':');
@@ -354,16 +355,24 @@ function renderTimeSlots() {
             if (period === 'AM' && slotHour === 12) slotHour = 0;
             
             if (slotHour < now.getHours() || (slotHour === now.getHours() && parseInt(minutes) <= now.getMinutes())) {
-                disabled = true;
+                isPast = true;
             }
         }
+        return { slot, index, isPast };
+    }).filter(item => !item.isPast); // Remove past slots
 
+    if (availableSlots.length === 0) {
+        container.innerHTML = '<p style="color: var(--color-gray-500); text-align: center; padding: 20px;">No slots available for today. Please select another date.</p>';
+        return;
+    }
+
+    container.innerHTML = availableSlots.map(({ slot, index }) => {
         const isSelected = state.selectedSlots.includes(index);
         const canSelect = state.selectedSlots.length < 3 || isSelected;
 
         return `
-            <div class="time-slot ${isSelected ? 'selected' : ''} ${disabled || (!canSelect && !isSelected) ? 'disabled' : ''}" 
-                 onclick="${disabled ? '' : `toggleTimeSlot(${index})`}">
+            <div class="time-slot ${isSelected ? 'selected' : ''} ${!canSelect && !isSelected ? 'disabled' : ''}" 
+                 onclick="toggleTimeSlot(${index})">
                 ${slot}
             </div>
         `;
@@ -427,14 +436,11 @@ async function submitBooking() {
     
     // Calculate totals
     let totalPrice = 0;
-    let totalDuration = 0;
     const serviceNames = [];
     
     state.selectedServices.forEach(index => {
         const service = salon.services[index];
         totalPrice += service.price;
-        const duration = parseInt(service.duration);
-        if (!isNaN(duration)) totalDuration += duration;
         serviceNames.push(`${service.name} (₹${service.price})`);
     });
     
@@ -451,7 +457,6 @@ async function submitBooking() {
         salonOwnerPhone: salon.ownerPhone,
         services: serviceNames.join(', '),
         totalPrice: totalPrice,
-        totalDuration: `${totalDuration} min`,
         date: `${dateInfo.day}, ${dateInfo.date} ${dateInfo.month}`,
         preferredSlots: slots
     };
@@ -524,7 +529,30 @@ async function sendEmailNotification(bookingData) {
 function showConfirmation(bookingData) {
     const container = document.getElementById('confirmation-details');
     
+    // Generate a dummy booking ID
+    const bookingId = 'NC' + Math.random().toString(36).substring(2, 8).toUpperCase();
+    bookingData.bookingId = bookingId;
+    
+    // Update localStorage with booking ID
+    const bookings = JSON.parse(localStorage.getItem('nearcuts_bookings') || '[]');
+    if (bookings.length > 0) {
+        bookings[bookings.length - 1].bookingId = bookingId;
+        bookings[bookings.length - 1].status = 'pending'; // pending, confirmed, cancelled
+        localStorage.setItem('nearcuts_bookings', JSON.stringify(bookings));
+    }
+    
+    // Store current booking for cancel functionality
+    state.currentBooking = bookingData;
+    
     container.innerHTML = `
+        <div class="confirmation-details-item">
+            <span class="confirmation-details-label">Booking ID</span>
+            <span class="confirmation-details-value">${bookingId}</span>
+        </div>
+        <div class="confirmation-details-item">
+            <span class="confirmation-details-label">Status</span>
+            <span class="confirmation-details-value status-pending">⏳ Waiting for salon confirmation</span>
+        </div>
         <div class="confirmation-details-item">
             <span class="confirmation-details-label">Salon</span>
             <span class="confirmation-details-value">${bookingData.salonName}</span>
@@ -535,7 +563,7 @@ function showConfirmation(bookingData) {
         </div>
         <div class="confirmation-details-item">
             <span class="confirmation-details-label">Total</span>
-            <span class="confirmation-details-value">₹${bookingData.totalPrice} • ${bookingData.totalDuration}</span>
+            <span class="confirmation-details-value">₹${bookingData.totalPrice}</span>
         </div>
         <div class="confirmation-details-item">
             <span class="confirmation-details-label">Date</span>
@@ -627,4 +655,58 @@ function viewBookings() {
     const bookings = JSON.parse(localStorage.getItem('nearcuts_bookings') || '[]');
     console.table(bookings);
     return bookings;
+}
+
+// Cancel booking
+function cancelBooking() {
+    if (!state.currentBooking || !state.currentBooking.bookingId) {
+        showToast('No booking to cancel', 'error');
+        return;
+    }
+    
+    if (!confirm('Are you sure you want to cancel this booking?')) {
+        return;
+    }
+    
+    // Update booking status in localStorage
+    const bookings = JSON.parse(localStorage.getItem('nearcuts_bookings') || '[]');
+    const bookingIndex = bookings.findIndex(b => b.bookingId === state.currentBooking.bookingId);
+    
+    if (bookingIndex > -1) {
+        bookings[bookingIndex].status = 'cancelled';
+        localStorage.setItem('nearcuts_bookings', JSON.stringify(bookings));
+    }
+    
+    // Show cancellation confirmation
+    showCancellationConfirmation();
+}
+
+// Show cancellation confirmation
+function showCancellationConfirmation() {
+    const container = document.getElementById('confirmation-details');
+    const card = document.querySelector('.confirmation-card');
+    
+    // Update icon and title
+    card.querySelector('.confirmation-icon').textContent = '✕';
+    card.querySelector('.confirmation-icon').classList.add('cancelled');
+    card.querySelector('h2').textContent = 'Booking Cancelled';
+    card.querySelector('.confirmation-card > p').textContent = 'Your booking has been cancelled. The salon will be notified.';
+    
+    // Update details to show cancelled status
+    const statusItem = container.querySelector('.status-pending');
+    if (statusItem) {
+        statusItem.textContent = '❌ Cancelled';
+        statusItem.classList.remove('status-pending');
+        statusItem.classList.add('status-cancelled');
+    }
+    
+    // Update buttons
+    const actionsContainer = card.querySelector('.confirmation-actions');
+    actionsContainer.innerHTML = `
+        <button class="btn btn-primary" onclick="goToHome()">
+            Book Again
+        </button>
+    `;
+    
+    showToast('Booking cancelled successfully');
 }
