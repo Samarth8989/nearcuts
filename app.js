@@ -657,8 +657,90 @@ function viewBookings() {
     return bookings;
 }
 
-// Cancel booking
-function cancelBooking() {
+// Show My Bookings screen
+function showMyBookings() {
+    renderMyBookings();
+    showScreen('screen-my-bookings');
+}
+
+// Render My Bookings list
+function renderMyBookings() {
+    const container = document.getElementById('my-bookings-list');
+    const bookings = JSON.parse(localStorage.getItem('nearcuts_bookings') || '[]');
+    
+    // Sort by newest first
+    bookings.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    
+    if (bookings.length === 0) {
+        container.innerHTML = `
+            <div class="empty-bookings">
+                <div class="empty-bookings-icon">📅</div>
+                <h3>No bookings yet</h3>
+                <p>Your booking history will appear here</p>
+                <button class="btn btn-primary" onclick="goToHome()">Book Now</button>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = bookings.map(booking => {
+        const status = booking.status || 'pending';
+        const statusLabels = {
+            pending: '⏳ Pending',
+            confirmed: '✅ Confirmed',
+            completed: '✓ Completed',
+            cancelled: '✕ Cancelled'
+        };
+        
+        // Only show cancel button for pending or confirmed bookings
+        const canCancel = status === 'pending' || status === 'confirmed';
+        
+        return `
+            <div class="booking-card">
+                <div class="booking-card-header">
+                    <span class="booking-card-id">#${booking.bookingId || 'N/A'}</span>
+                    <span class="booking-card-status ${status}">${statusLabels[status]}</span>
+                </div>
+                <h3 class="booking-card-salon">${booking.salonName}</h3>
+                <p class="booking-card-services">${booking.services || booking.serviceName}</p>
+                <div class="booking-card-details">
+                    <span>📅 ${booking.date}</span>
+                    <span>🕐 ${booking.preferredSlots}</span>
+                    <span>💰 ₹${booking.totalPrice || booking.servicePrice}</span>
+                </div>
+                ${canCancel ? `
+                    <div class="booking-card-actions">
+                        <button class="btn-cancel-small" onclick="cancelBookingById('${booking.bookingId}')">
+                            Cancel Booking
+                        </button>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }).join('');
+}
+
+// Cancel booking by ID (from My Bookings page)
+function cancelBookingById(bookingId) {
+    if (!confirm('Are you sure you want to cancel this booking?')) {
+        return;
+    }
+    
+    const bookings = JSON.parse(localStorage.getItem('nearcuts_bookings') || '[]');
+    const bookingIndex = bookings.findIndex(b => b.bookingId === bookingId);
+    
+    if (bookingIndex > -1) {
+        bookings[bookingIndex].status = 'cancelled';
+        localStorage.setItem('nearcuts_bookings', JSON.stringify(bookings));
+        showToast('Booking cancelled successfully');
+        renderMyBookings(); // Re-render the list
+    } else {
+        showToast('Booking not found', 'error');
+    }
+}
+
+// Cancel current booking (from confirmation page)
+function cancelCurrentBooking() {
     if (!state.currentBooking || !state.currentBooking.bookingId) {
         showToast('No booking to cancel', 'error');
         return;
