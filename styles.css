@@ -130,6 +130,34 @@ h4 { font-size: 1.1rem; }
 .main {
     flex: 1;
     padding: 40px 0;
+    background: linear-gradient(135deg, #fafafa 0%, #f0f4ff 50%, #fff5f5 100%);
+    min-height: calc(100vh - 64px - 73px);
+    position: relative;
+    overflow: hidden;
+}
+
+.main::before {
+    content: '';
+    position: absolute;
+    top: -100px;
+    right: -100px;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(233, 69, 96, 0.08) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.main::after {
+    content: '';
+    position: absolute;
+    bottom: -150px;
+    left: -150px;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(26, 26, 46, 0.05) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
 }
 
 /* Screens */
@@ -151,6 +179,20 @@ h4 { font-size: 1.1rem; }
 .hero {
     text-align: center;
     padding: 40px 0;
+    position: relative;
+}
+
+.hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(233, 69, 96, 0.1);
+    color: var(--color-accent);
+    padding: 8px 16px;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 20px;
 }
 
 .hero-title {
@@ -164,24 +206,54 @@ h4 { font-size: 1.1rem; }
     position: relative;
 }
 
+.hero-title .highlight::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 0;
+    right: 0;
+    height: 8px;
+    background: rgba(233, 69, 96, 0.2);
+    z-index: -1;
+    border-radius: 4px;
+}
+
 .hero-subtitle {
     font-size: 1.1rem;
     color: var(--color-gray-500);
     margin-bottom: 40px;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 /* Location Card */
 .location-card {
     background: var(--color-white);
-    border-radius: var(--radius-lg);
-    padding: 32px;
-    box-shadow: var(--shadow-lg);
+    border-radius: var(--radius-xl);
+    padding: 36px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.02);
     max-width: 400px;
     margin: 0 auto;
+    position: relative;
+}
+
+.location-card::before {
+    content: '📍';
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 2.5rem;
+    background: var(--color-white);
+    padding: 8px;
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .location-card h3 {
     margin-bottom: 24px;
+    margin-top: 8px;
     text-align: center;
 }
 
@@ -297,26 +369,48 @@ select:focus {
 .how-it-works {
     margin-top: 80px;
     text-align: center;
+    padding: 60px 0;
+    background: var(--color-white);
+    border-radius: var(--radius-xl);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
 }
 
 .how-it-works h2 {
+    margin-bottom: 16px;
+}
+
+.how-it-works-subtitle {
+    color: var(--color-gray-500);
     margin-bottom: 40px;
+    font-size: 1rem;
 }
 
 .steps {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 24px;
+    padding: 0 20px;
 }
 
 .step {
     padding: 24px 16px;
+    position: relative;
+}
+
+.step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 48px;
+    right: -12px;
+    width: 24px;
+    height: 2px;
+    background: var(--color-gray-200);
 }
 
 .step-number {
-    width: 48px;
-    height: 48px;
-    background: var(--color-accent);
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-light) 100%);
     color: var(--color-white);
     border-radius: 50%;
     display: flex;
@@ -326,15 +420,18 @@ select:focus {
     font-size: 1.25rem;
     font-weight: 700;
     margin: 0 auto 16px;
+    box-shadow: 0 8px 20px rgba(233, 69, 96, 0.3);
 }
 
 .step h4 {
     margin-bottom: 8px;
+    font-size: 1rem;
 }
 
 .step p {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: var(--color-gray-500);
+    line-height: 1.5;
 }
 
 /* Salons List */
@@ -361,11 +458,13 @@ select:focus {
 .salon-card {
     background: var(--color-white);
     border-radius: var(--radius-lg);
-    padding: 24px;
+    padding: 0;
     box-shadow: var(--shadow);
     cursor: pointer;
     transition: var(--transition);
     border: 2px solid transparent;
+    overflow: hidden;
+    display: flex;
 }
 
 .salon-card:hover {
@@ -374,16 +473,32 @@ select:focus {
     transform: translateY(-2px);
 }
 
+.salon-card-icon {
+    width: 100px;
+    min-height: 100%;
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    flex-shrink: 0;
+}
+
+.salon-card-content {
+    padding: 20px;
+    flex: 1;
+}
+
 .salon-card-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
 }
 
 .salon-card-name {
     font-family: var(--font-display);
-    font-size: 1.2rem;
+    font-size: 1.15rem;
     font-weight: 600;
     color: var(--color-gray-900);
 }
@@ -392,42 +507,61 @@ select:focus {
     background: var(--color-gray-100);
     padding: 4px 10px;
     border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 500;
+    font-size: 0.75rem;
+    font-weight: 600;
     color: var(--color-gray-600);
     white-space: nowrap;
 }
 
 .salon-card-address {
     color: var(--color-gray-500);
-    font-size: 0.9rem;
-    margin-bottom: 16px;
+    font-size: 0.85rem;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .salon-card-services {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 6px;
 }
 
 .service-tag {
     background: var(--color-gray-100);
-    padding: 6px 12px;
+    padding: 5px 10px;
     border-radius: 20px;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     color: var(--color-gray-600);
+    font-weight: 500;
+}
+
+.salon-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--color-gray-100);
 }
 
 .salon-card-rating {
     display: flex;
     align-items: center;
     gap: 4px;
-    margin-top: 16px;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+    font-weight: 500;
 }
 
 .salon-card-rating .star {
     color: var(--color-warning);
+}
+
+.salon-card-cta {
+    font-size: 0.8rem;
+    color: var(--color-accent);
+    font-weight: 600;
 }
 
 /* Salon Detail */
@@ -741,6 +875,50 @@ select:focus {
     margin-bottom: 32px;
 }
 
+.confirmation-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.btn-cancel {
+    background: transparent;
+    border: 2px solid var(--color-gray-300);
+    color: var(--color-gray-600);
+    padding: 12px 24px;
+    border-radius: var(--radius);
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-cancel:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+    background: rgba(233, 69, 96, 0.05);
+}
+
+.status-pending {
+    color: var(--color-warning);
+    font-weight: 600;
+}
+
+.status-confirmed {
+    color: var(--color-success);
+    font-weight: 600;
+}
+
+.status-cancelled {
+    color: var(--color-accent);
+    font-weight: 600;
+}
+
+.confirmation-icon.cancelled {
+    background: var(--color-accent);
+}
+
 .confirmation-details {
     background: var(--color-gray-50);
     border-radius: var(--radius);
@@ -850,6 +1028,10 @@ select:focus {
         grid-template-columns: repeat(2, 1fr);
     }
     
+    .step:not(:last-child)::after {
+        display: none;
+    }
+    
     .time-slots {
         grid-template-columns: repeat(3, 1fr);
     }
@@ -857,6 +1039,10 @@ select:focus {
     .salon-detail-meta {
         flex-direction: column;
         gap: 8px;
+    }
+    
+    .salon-card-icon {
+        width: 80px;
     }
 }
 
@@ -874,7 +1060,12 @@ select:focus {
     }
     
     .location-card {
-        padding: 24px;
+        padding: 28px 20px;
+    }
+    
+    .how-it-works {
+        padding: 40px 16px;
+        margin-top: 60px;
     }
     
     .steps {
@@ -888,17 +1079,30 @@ select:focus {
         gap: 16px;
         text-align: left;
         padding: 16px;
-        background: var(--color-white);
+        background: var(--color-gray-50);
         border-radius: var(--radius);
-        box-shadow: var(--shadow);
+    }
+    
+    .step:not(:last-child)::after {
+        display: none;
     }
     
     .step-number {
         margin: 0;
         flex-shrink: 0;
-        width: 40px;
-        height: 40px;
+        width: 48px;
+        height: 48px;
         font-size: 1rem;
+    }
+    
+    .salon-card {
+        flex-direction: column;
+    }
+    
+    .salon-card-icon {
+        width: 100%;
+        height: 60px;
+        font-size: 2rem;
     }
     
     .time-slots {
